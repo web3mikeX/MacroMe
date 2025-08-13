@@ -1,0 +1,7 @@
+node_modules
+.next
+.git
+.env*
+public
+*.log
+package-lock.json

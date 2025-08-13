@@ -1,0 +1,48 @@
+data_dir: /vector-data-dir
+
+api:
+  enabled: true
+  address: 127.0.0.1:8686
+  playground: false
+
+sources:
+  docker_host:
+    type: docker_logs
+    include_labels:
+      - com.docker.compose.project=supabase
+
+  docker_logs:
+    type: docker_logs
+    include_labels:
+      - com.docker.compose.project=supabase
+
+transforms:
+  project_logs:
+    type: remap
+    inputs:
+      - docker_host
+      - docker_logs
+    source: |
+      .project = get_env_var!("DOCKER_PROJECT_NAME")
+      .pod_name = .label."com.docker.compose.service" || "unknown"
+
+sinks:
+  logflare:
+    type: http
+    inputs:
+      - project_logs
+    uri: http://analytics:4000/api/logs
+    method: post
+    healthcheck:
+      enabled: false
+    headers:
+      X-API-Key: "${LOGFLARE_API_KEY}"
+      Content-Type: application/json
+    encoding:
+      codec: json
+    batch:
+      max_bytes: 1048576
+    buffer:
+      type: disk
+      max_size: 268435488
+    compression: gzip

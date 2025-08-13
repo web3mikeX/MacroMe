@@ -1,0 +1,17 @@
+{
+  "levels": {
+    "low": false,
+    "moderate": false,
+    "high": true,
+    "critical": true
+  },
+  "report-type": "important",
+  "allowlist": [
+    "GHSA-example-1234"
+  ],
+  "registry": "https://registry.npmjs.org/",
+  "pass-enoaudit": false,
+  "show-found": true,
+  "show-not-found": false,
+  "summary-fail-level": "high"
+}
