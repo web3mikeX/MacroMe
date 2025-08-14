@@ -2,10 +2,23 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
 import { Target, Edit } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
@@ -51,8 +64,12 @@ export default function MacroTargets({ userProfile }: MacroTargetsProps) {
     }
   }
 
-  const proteinGrams = Math.round((targets.kcal_target * targets.protein_pct) / 100 / 4)
-  const carbGrams = Math.round((targets.kcal_target * targets.carb_pct) / 100 / 4)
+  const proteinGrams = Math.round(
+    (targets.kcal_target * targets.protein_pct) / 100 / 4
+  )
+  const carbGrams = Math.round(
+    (targets.kcal_target * targets.carb_pct) / 100 / 4
+  )
   const fatGrams = Math.round((targets.kcal_target * targets.fat_pct) / 100 / 9)
 
   return (
@@ -74,7 +91,8 @@ export default function MacroTargets({ userProfile }: MacroTargetsProps) {
               <DialogHeader>
                 <DialogTitle>Update Macro Targets</DialogTitle>
                 <DialogDescription>
-                  Set your daily calorie and macronutrient targets for meal planning.
+                  Set your daily calorie and macronutrient targets for meal
+                  planning.
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4">
@@ -84,7 +102,12 @@ export default function MacroTargets({ userProfile }: MacroTargetsProps) {
                     id="calories"
                     type="number"
                     value={targets.kcal_target}
-                    onChange={(e) => setTargets(prev => ({ ...prev, kcal_target: parseInt(e.target.value) || 0 }))}
+                    onChange={(e) =>
+                      setTargets((prev) => ({
+                        ...prev,
+                        kcal_target: parseInt(e.target.value) || 0,
+                      }))
+                    }
                   />
                 </div>
                 <div className="grid grid-cols-3 gap-4">
@@ -96,7 +119,12 @@ export default function MacroTargets({ userProfile }: MacroTargetsProps) {
                       min="10"
                       max="50"
                       value={targets.protein_pct}
-                      onChange={(e) => setTargets(prev => ({ ...prev, protein_pct: parseInt(e.target.value) || 0 }))}
+                      onChange={(e) =>
+                        setTargets((prev) => ({
+                          ...prev,
+                          protein_pct: parseInt(e.target.value) || 0,
+                        }))
+                      }
                     />
                     <p className="text-xs text-muted-foreground mt-1">
                       {proteinGrams}g
@@ -110,7 +138,12 @@ export default function MacroTargets({ userProfile }: MacroTargetsProps) {
                       min="20"
                       max="70"
                       value={targets.carb_pct}
-                      onChange={(e) => setTargets(prev => ({ ...prev, carb_pct: parseInt(e.target.value) || 0 }))}
+                      onChange={(e) =>
+                        setTargets((prev) => ({
+                          ...prev,
+                          carb_pct: parseInt(e.target.value) || 0,
+                        }))
+                      }
                     />
                     <p className="text-xs text-muted-foreground mt-1">
                       {carbGrams}g
@@ -124,7 +157,12 @@ export default function MacroTargets({ userProfile }: MacroTargetsProps) {
                       min="15"
                       max="50"
                       value={targets.fat_pct}
-                      onChange={(e) => setTargets(prev => ({ ...prev, fat_pct: parseInt(e.target.value) || 0 }))}
+                      onChange={(e) =>
+                        setTargets((prev) => ({
+                          ...prev,
+                          fat_pct: parseInt(e.target.value) || 0,
+                        }))
+                      }
                     />
                     <p className="text-xs text-muted-foreground mt-1">
                       {fatGrams}g
@@ -132,14 +170,20 @@ export default function MacroTargets({ userProfile }: MacroTargetsProps) {
                   </div>
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  Total: {targets.protein_pct + targets.carb_pct + targets.fat_pct}% 
-                  {targets.protein_pct + targets.carb_pct + targets.fat_pct !== 100 && (
+                  Total:{' '}
+                  {targets.protein_pct + targets.carb_pct + targets.fat_pct}%
+                  {targets.protein_pct + targets.carb_pct + targets.fat_pct !==
+                    100 && (
                     <span className="text-red-500 ml-2">Should equal 100%</span>
                   )}
                 </div>
-                <Button 
-                  onClick={handleSave} 
-                  disabled={isLoading || targets.protein_pct + targets.carb_pct + targets.fat_pct !== 100}
+                <Button
+                  onClick={handleSave}
+                  disabled={
+                    isLoading ||
+                    targets.protein_pct + targets.carb_pct + targets.fat_pct !==
+                      100
+                  }
                   className="w-full"
                 >
                   {isLoading ? 'Saving...' : 'Save Targets'}
@@ -148,39 +192,63 @@ export default function MacroTargets({ userProfile }: MacroTargetsProps) {
             </DialogContent>
           </Dialog>
         </CardTitle>
-        <CardDescription>
-          Your daily macro and calorie targets
-        </CardDescription>
+        <CardDescription>Your daily macro and calorie targets</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="text-center">
-          <div className="text-3xl font-bold">{userProfile?.kcal_target?.toLocaleString() || '2,000'}</div>
+          <div className="text-3xl font-bold">
+            {userProfile?.kcal_target?.toLocaleString('en-US') || '2,000'}
+          </div>
           <div className="text-sm text-muted-foreground">calories per day</div>
         </div>
-        
+
         <div className="grid grid-cols-3 gap-4 text-center">
           <div className="p-3 bg-green-50 rounded-lg">
             <div className="text-lg font-semibold text-green-700">
-              {Math.round(((userProfile?.kcal_target || 2000) * (userProfile?.protein_pct || 30)) / 100 / 4)}g
+              {Math.round(
+                ((userProfile?.kcal_target || 2000) *
+                  (userProfile?.protein_pct || 30)) /
+                  100 /
+                  4
+              )}
+              g
             </div>
             <div className="text-sm text-green-600">Protein</div>
-            <div className="text-xs text-muted-foreground">{userProfile?.protein_pct || 30}%</div>
+            <div className="text-xs text-muted-foreground">
+              {userProfile?.protein_pct || 30}%
+            </div>
           </div>
-          
+
           <div className="p-3 bg-blue-50 rounded-lg">
             <div className="text-lg font-semibold text-blue-700">
-              {Math.round(((userProfile?.kcal_target || 2000) * (userProfile?.carb_pct || 40)) / 100 / 4)}g
+              {Math.round(
+                ((userProfile?.kcal_target || 2000) *
+                  (userProfile?.carb_pct || 40)) /
+                  100 /
+                  4
+              )}
+              g
             </div>
             <div className="text-sm text-blue-600">Carbs</div>
-            <div className="text-xs text-muted-foreground">{userProfile?.carb_pct || 40}%</div>
+            <div className="text-xs text-muted-foreground">
+              {userProfile?.carb_pct || 40}%
+            </div>
           </div>
-          
+
           <div className="p-3 bg-orange-50 rounded-lg">
             <div className="text-lg font-semibold text-orange-700">
-              {Math.round(((userProfile?.kcal_target || 2000) * (userProfile?.fat_pct || 30)) / 100 / 9)}g
+              {Math.round(
+                ((userProfile?.kcal_target || 2000) *
+                  (userProfile?.fat_pct || 30)) /
+                  100 /
+                  9
+              )}
+              g
             </div>
             <div className="text-sm text-orange-600">Fat</div>
-            <div className="text-xs text-muted-foreground">{userProfile?.fat_pct || 30}%</div>
+            <div className="text-xs text-muted-foreground">
+              {userProfile?.fat_pct || 30}%
+            </div>
           </div>
         </div>
       </CardContent>

@@ -3,9 +3,14 @@
 import { useState, useMemo } from 'react'
 import { User } from '@supabase/supabase-js'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { ChefHat, ArrowLeft, Download, Plus, Target } from 'lucide-react'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import { ChefHat, ArrowLeft, Download, Target } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
@@ -41,20 +46,14 @@ interface MealPlanClientProps {
   recipes: Recipe[]
 }
 
-const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-const MEAL_SLOTS = ['breakfast', 'lunch', 'dinner', 'snack']
-
-export default function MealPlanClient({ 
-  user, 
-  userProfile, 
-  weekStart, 
-  mealPlan, 
-  meals: initialMeals, 
-  recipes 
+export default function MealPlanClient({
+  userProfile,
+  weekStart,
+  mealPlan,
+  meals: initialMeals,
+  recipes,
 }: MealPlanClientProps) {
   const [meals, setMeals] = useState(initialMeals)
-  const router = useRouter()
-  const supabase = createClient()
 
   // Calculate weekly macro totals
   const weeklyTotals = useMemo(() => {
@@ -63,19 +62,19 @@ export default function MealPlanClient({
     let totalCarbs = 0
     let totalFat = 0
 
-    meals.forEach(meal => {
+    meals.forEach((meal) => {
       if (meal.recipes && meal.recipes.recipe_ingredients) {
-        meal.recipes.recipe_ingredients.forEach(ingredient => {
+        meal.recipes.recipe_ingredients.forEach((ingredient) => {
           const servingMultiplier = meal.servings
           const quantity = ingredient.quantity
           const nutrition = ingredient.ingredients
-          
+
           // Calculate nutrition based on ingredient quantity and servings
           const caloriesPerServing = (nutrition.kcal * quantity) / 100
           const proteinPerServing = (nutrition.protein * quantity) / 100
           const carbsPerServing = (nutrition.carbs * quantity) / 100
           const fatPerServing = (nutrition.fat * quantity) / 100
-          
+
           totalCalories += caloriesPerServing * servingMultiplier
           totalProtein += proteinPerServing * servingMultiplier
           totalCarbs += carbsPerServing * servingMultiplier
@@ -95,9 +94,21 @@ export default function MealPlanClient({
   // Calculate macro targets for the week
   const targets = {
     calories: userProfile?.kcal_target || 2000,
-    protein: Math.round(((userProfile?.kcal_target || 2000) * (userProfile?.protein_pct || 30)) / 100 / 4),
-    carbs: Math.round(((userProfile?.kcal_target || 2000) * (userProfile?.carb_pct || 40)) / 100 / 4),
-    fat: Math.round(((userProfile?.kcal_target || 2000) * (userProfile?.fat_pct || 30)) / 100 / 9),
+    protein: Math.round(
+      ((userProfile?.kcal_target || 2000) * (userProfile?.protein_pct || 30)) /
+        100 /
+        4
+    ),
+    carbs: Math.round(
+      ((userProfile?.kcal_target || 2000) * (userProfile?.carb_pct || 40)) /
+        100 /
+        4
+    ),
+    fat: Math.round(
+      ((userProfile?.kcal_target || 2000) * (userProfile?.fat_pct || 30)) /
+        100 /
+        9
+    ),
   }
 
   // Calculate accuracy (green/amber/red indicators)
@@ -110,14 +121,17 @@ export default function MealPlanClient({
 
   const exportGroceryList = () => {
     // Aggregate all ingredients needed for the week
-    const ingredientMap = new Map<string, { name: string; quantity: number; unit: string }>()
+    const ingredientMap = new Map<
+      string,
+      { name: string; quantity: number; unit: string }
+    >()
 
-    meals.forEach(meal => {
+    meals.forEach((meal) => {
       if (meal.recipes && meal.recipes.recipe_ingredients) {
-        meal.recipes.recipe_ingredients.forEach(ingredient => {
+        meal.recipes.recipe_ingredients.forEach((ingredient) => {
           const key = ingredient.ingredient_id
           const totalQuantity = ingredient.quantity * meal.servings
-          
+
           if (ingredientMap.has(key)) {
             const existing = ingredientMap.get(key)!
             existing.quantity += totalQuantity
@@ -125,7 +139,7 @@ export default function MealPlanClient({
             ingredientMap.set(key, {
               name: ingredient.ingredients.name,
               quantity: totalQuantity,
-              unit: ingredient.unit
+              unit: ingredient.unit,
             })
           }
         })
@@ -135,9 +149,9 @@ export default function MealPlanClient({
     // Create CSV content
     const csvContent = [
       'Ingredient,Quantity,Unit',
-      ...Array.from(ingredientMap.values()).map(item =>
-        `"${item.name}",${item.quantity},"${item.unit}"`
-      )
+      ...Array.from(ingredientMap.values()).map(
+        (item) => `"${item.name}",${item.quantity},"${item.unit}"`
+      ),
     ].join('\n')
 
     // Download the file
@@ -170,13 +184,22 @@ export default function MealPlanClient({
               <div className="flex items-center gap-2">
                 <ChefHat className="h-6 w-6 text-green-600" />
                 <h1 className="text-xl font-bold text-gray-900">
-                  Meal Plan - Week of {new Date(weekStart).toLocaleDateString()}
+                  Meal Plan - Week of{' '}
+                  {new Date(weekStart).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                  })}
                 </h1>
               </div>
             </div>
-            
+
             <div className="flex items-center gap-2">
-              <Button variant="outline" onClick={exportGroceryList} disabled={meals.length === 0}>
+              <Button
+                variant="outline"
+                onClick={exportGroceryList}
+                disabled={meals.length === 0}
+              >
                 <Download className="h-4 w-4 mr-2" />
                 Grocery List
               </Button>
@@ -202,45 +225,66 @@ export default function MealPlanClient({
               Daily Macro Targets vs Actual (7-day average)
             </CardTitle>
             <CardDescription>
-              Color indicators: Green (±5%), Yellow (±15%), Red (&gt;15% off target)
+              Color indicators: Green (±5%), Yellow (±15%), Red (&gt;15% off
+              target)
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-4 gap-6">
               <div className="text-center">
                 <div className="flex items-center justify-center mb-2">
-                  <div className={`w-3 h-3 rounded-full mr-2 ${getAccuracyColor(weeklyTotals.calories, targets.calories)}`}></div>
+                  <div
+                    className={`w-3 h-3 rounded-full mr-2 ${getAccuracyColor(weeklyTotals.calories, targets.calories)}`}
+                  ></div>
                   <span className="font-medium">Calories</span>
                 </div>
-                <div className="text-2xl font-bold">{weeklyTotals.calories}</div>
-                <div className="text-sm text-muted-foreground">Target: {targets.calories}</div>
+                <div className="text-2xl font-bold">
+                  {weeklyTotals.calories}
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  Target: {targets.calories}
+                </div>
               </div>
-              
+
               <div className="text-center">
                 <div className="flex items-center justify-center mb-2">
-                  <div className={`w-3 h-3 rounded-full mr-2 ${getAccuracyColor(weeklyTotals.protein, targets.protein)}`}></div>
+                  <div
+                    className={`w-3 h-3 rounded-full mr-2 ${getAccuracyColor(weeklyTotals.protein, targets.protein)}`}
+                  ></div>
                   <span className="font-medium">Protein</span>
                 </div>
-                <div className="text-2xl font-bold">{weeklyTotals.protein}g</div>
-                <div className="text-sm text-muted-foreground">Target: {targets.protein}g</div>
+                <div className="text-2xl font-bold">
+                  {weeklyTotals.protein}g
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  Target: {targets.protein}g
+                </div>
               </div>
-              
+
               <div className="text-center">
                 <div className="flex items-center justify-center mb-2">
-                  <div className={`w-3 h-3 rounded-full mr-2 ${getAccuracyColor(weeklyTotals.carbs, targets.carbs)}`}></div>
+                  <div
+                    className={`w-3 h-3 rounded-full mr-2 ${getAccuracyColor(weeklyTotals.carbs, targets.carbs)}`}
+                  ></div>
                   <span className="font-medium">Carbs</span>
                 </div>
                 <div className="text-2xl font-bold">{weeklyTotals.carbs}g</div>
-                <div className="text-sm text-muted-foreground">Target: {targets.carbs}g</div>
+                <div className="text-sm text-muted-foreground">
+                  Target: {targets.carbs}g
+                </div>
               </div>
-              
+
               <div className="text-center">
                 <div className="flex items-center justify-center mb-2">
-                  <div className={`w-3 h-3 rounded-full mr-2 ${getAccuracyColor(weeklyTotals.fat, targets.fat)}`}></div>
+                  <div
+                    className={`w-3 h-3 rounded-full mr-2 ${getAccuracyColor(weeklyTotals.fat, targets.fat)}`}
+                  ></div>
                   <span className="font-medium">Fat</span>
                 </div>
                 <div className="text-2xl font-bold">{weeklyTotals.fat}g</div>
-                <div className="text-sm text-muted-foreground">Target: {targets.fat}g</div>
+                <div className="text-sm text-muted-foreground">
+                  Target: {targets.fat}g
+                </div>
               </div>
             </div>
           </CardContent>

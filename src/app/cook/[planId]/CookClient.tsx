@@ -1,10 +1,16 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { useTimer } from '@/hooks/useTimer'
 import { User } from '@supabase/supabase-js'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -55,11 +61,13 @@ interface Timer {
 }
 
 export default function CookClient({ mealPlan, meals }: CookClientProps) {
-  const [currentView, setCurrentView] = useState<'overview' | 'step-by-step'>('overview')
+  const [currentView, setCurrentView] = useState<'overview' | 'step-by-step'>(
+    'overview'
+  )
   const [currentStepIndex, setCurrentStepIndex] = useState(0)
   const [completedSteps, setCompletedSteps] = useState<Set<string>>(new Set())
   const router = useRouter()
-  
+
   // Use the enhanced timer hook
   const {
     timers,
@@ -68,16 +76,16 @@ export default function CookClient({ mealPlan, meals }: CookClientProps) {
     pauseTimer,
     resetTimer,
     removeTimer,
-    formatTime
+    formatTime,
   } = useTimer({ showBrowserNotification: true, playSound: false })
 
   // Generate all cooking steps from all recipes
   const allSteps = useMemo(() => {
     const steps: CookingStep[] = []
-    
-    meals.forEach(meal => {
+
+    meals.forEach((meal) => {
       if (meal.recipes.steps && Array.isArray(meal.recipes.steps)) {
-        meal.recipes.steps.forEach(step => {
+        meal.recipes.steps.forEach((step) => {
           steps.push({
             id: `${meal.id}-${step.order}`,
             recipeId: meal.recipe_id,
@@ -90,7 +98,7 @@ export default function CookClient({ mealPlan, meals }: CookClientProps) {
         })
       }
     })
-    
+
     // Sort steps to optimize for parallel cooking
     return steps.sort((a, b) => {
       // Prioritize steps with timers first, then by recipe
@@ -104,20 +112,16 @@ export default function CookClient({ mealPlan, meals }: CookClientProps) {
 
   const startStepTimer = (step: CookingStep) => {
     if (!step.timeSeconds) return
-    
-    const timerId = createTimer(
-      step.recipeName,
-      step.text,
-      step.timeSeconds
-    )
-    
+
+    const timerId = createTimer(step.recipeName, step.text, step.timeSeconds)
+
     startTimer(timerId)
   }
 
   const toggleTimer = (timerId: string) => {
-    const timer = timers.find(t => t.id === timerId)
+    const timer = timers.find((t) => t.id === timerId)
     if (!timer) return
-    
+
     if (timer.isActive) {
       pauseTimer(timerId)
     } else {
@@ -126,11 +130,14 @@ export default function CookClient({ mealPlan, meals }: CookClientProps) {
   }
 
   const markStepComplete = (stepId: string) => {
-    setCompletedSteps(prev => new Set([...prev, stepId]))
-    
+    setCompletedSteps((prev) => new Set([...prev, stepId]))
+
     // Auto-advance to next step in step-by-step mode
-    if (currentView === 'step-by-step' && currentStepIndex < allSteps.length - 1) {
-      setCurrentStepIndex(prev => prev + 1)
+    if (
+      currentView === 'step-by-step' &&
+      currentStepIndex < allSteps.length - 1
+    ) {
+      setCurrentStepIndex((prev) => prev + 1)
     }
   }
 
@@ -152,11 +159,16 @@ export default function CookClient({ mealPlan, meals }: CookClientProps) {
               <div className="flex items-center gap-2">
                 <ChefHat className="h-6 w-6 text-green-600" />
                 <h1 className="text-xl font-bold text-gray-900">
-                  Guided Cooking - Week of {new Date(mealPlan.week_start).toLocaleDateString()}
+                  Guided Cooking - Week of{' '}
+                  {new Date(mealPlan.week_start).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                  })}
                 </h1>
               </div>
             </div>
-            
+
             <div className="flex items-center gap-2">
               <Badge variant="secondary">
                 {completedSteps.size} / {allSteps.length} steps
@@ -166,7 +178,7 @@ export default function CookClient({ mealPlan, meals }: CookClientProps) {
               </div>
             </div>
           </div>
-          
+
           {/* Progress Bar */}
           <div className="mt-4">
             <Progress value={progress} className="h-2" />
@@ -188,12 +200,17 @@ export default function CookClient({ mealPlan, meals }: CookClientProps) {
           </div>
         )}
 
-        <Tabs value={currentView} onValueChange={(value) => setCurrentView(value as 'overview' | 'step-by-step')}>
+        <Tabs
+          value={currentView}
+          onValueChange={(value) =>
+            setCurrentView(value as 'overview' | 'step-by-step')
+          }
+        >
           <TabsList className="mb-8">
             <TabsTrigger value="overview">Timeline Overview</TabsTrigger>
             <TabsTrigger value="step-by-step">Step-by-Step Guide</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="overview">
             <CookingTimeline
               meals={meals}
@@ -203,7 +220,7 @@ export default function CookClient({ mealPlan, meals }: CookClientProps) {
               formatTime={formatTime}
             />
           </TabsContent>
-          
+
           <TabsContent value="step-by-step">
             {allSteps.length > 0 && currentStep && (
               <Card className="max-w-2xl mx-auto">
@@ -212,13 +229,9 @@ export default function CookClient({ mealPlan, meals }: CookClientProps) {
                     <Badge variant="outline">
                       Step {currentStepIndex + 1} of {allSteps.length}
                     </Badge>
-                    <Badge variant="secondary">
-                      {currentStep.recipeName}
-                    </Badge>
+                    <Badge variant="secondary">{currentStep.recipeName}</Badge>
                   </div>
-                  <CardTitle className="text-xl">
-                    {currentStep.text}
-                  </CardTitle>
+                  <CardTitle className="text-xl">{currentStep.text}</CardTitle>
                   {currentStep.timeSeconds && (
                     <CardDescription className="flex items-center gap-2">
                       <Clock className="h-4 w-4" />
@@ -229,38 +242,48 @@ export default function CookClient({ mealPlan, meals }: CookClientProps) {
                 <CardContent className="space-y-4">
                   <div className="flex gap-2">
                     {currentStep.timeSeconds && (
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         onClick={() => startStepTimer(currentStep)}
-                        disabled={timers.some(t => t.description === currentStep.text)}
+                        disabled={timers.some(
+                          (t) => t.description === currentStep.text
+                        )}
                       >
                         <Timer className="h-4 w-4 mr-2" />
                         Start Timer
                       </Button>
                     )}
-                    
-                    <Button 
+
+                    <Button
                       onClick={() => markStepComplete(currentStep.id)}
                       disabled={completedSteps.has(currentStep.id)}
                       className="flex-1"
                     >
                       <Check className="h-4 w-4 mr-2" />
-                      {completedSteps.has(currentStep.id) ? 'Completed' : 'Mark Complete'}
+                      {completedSteps.has(currentStep.id)
+                        ? 'Completed'
+                        : 'Mark Complete'}
                     </Button>
                   </div>
-                  
+
                   <div className="flex justify-between">
-                    <Button 
-                      variant="outline" 
-                      onClick={() => setCurrentStepIndex(Math.max(0, currentStepIndex - 1))}
+                    <Button
+                      variant="outline"
+                      onClick={() =>
+                        setCurrentStepIndex(Math.max(0, currentStepIndex - 1))
+                      }
                       disabled={currentStepIndex === 0}
                     >
                       Previous Step
                     </Button>
-                    
-                    <Button 
+
+                    <Button
                       variant="outline"
-                      onClick={() => setCurrentStepIndex(Math.min(allSteps.length - 1, currentStepIndex + 1))}
+                      onClick={() =>
+                        setCurrentStepIndex(
+                          Math.min(allSteps.length - 1, currentStepIndex + 1)
+                        )
+                      }
                       disabled={currentStepIndex === allSteps.length - 1}
                     >
                       Next Step
@@ -279,7 +302,8 @@ export default function CookClient({ mealPlan, meals }: CookClientProps) {
               <div className="text-4xl mb-4">🎉</div>
               <h3 className="text-lg font-semibold mb-2">Cooking Complete!</h3>
               <p className="text-muted-foreground mb-4">
-                Great job! You&apos;ve completed all the cooking steps for your meal plan.
+                Great job! You&apos;ve completed all the cooking steps for your
+                meal plan.
               </p>
               <Button onClick={() => router.push('/dashboard')}>
                 Return to Dashboard
